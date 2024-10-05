@@ -6,8 +6,12 @@ ALLOWED_HOSTS = ["*"]
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": 'onlybook',
+        "USER": 'admin',
+        "PASSWORD": '60221210',
+        "HOST": 'database-1.cby0ykimabta.ap-northeast-2.rds.amazonaws.com',
+        "PORT": '3306',
     }
 }
 
