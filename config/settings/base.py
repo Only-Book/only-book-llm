@@ -74,8 +74,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://13.209.87.221",
     "https://13.209.87.221",
     "https://marueggserver.com",
-    "http://marueggllmserver.com",
-    "https://marueggllmserver.com",
+    "http://marueggllm.shop",
+    "https://marueggllm.shop",
     "https://maru-egg-fe.vercel.app",
 ]
 
