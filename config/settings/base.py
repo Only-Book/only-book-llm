@@ -73,9 +73,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://13.209.87.221",
     "https://13.209.87.221",
-    "https://marueggserver.com",
-    "http://marueggllm.shop",
-    "https://marueggllm.shop",
+    "https://onlybookllm.com",
+    "http://onlybookllm.com",
+    "https://onlybookllm.com",
     "https://maru-egg-fe.vercel.app",
 ]
 
@@ -85,8 +85,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://13.209.87.221",
     "https://13.209.87.221",
     "https://marueggserver.com"
-    "http://marueggllm.shop",
-    "https://marueggllm.shop",
+    "http://onlybookllm.com",
+    "https://onlybookllm.com",
     "https://maru-egg-fe.vercel.app",
 ]
 
