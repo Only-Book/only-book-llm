@@ -37,7 +37,6 @@ def embed_books():
     chroma.add_documents(documents)
     print(f"벡터 스토어에 임베딩된 책의 수: {len(documents)}")
 
-
 @api_view(['POST'])
 def chatbot_response(request):
     user_input = request.data.get('message', '')
@@ -46,6 +45,11 @@ def chatbot_response(request):
     # 벡터 스토어 초기화 (이미 임베딩된 데이터를 사용)
     embeddings = OpenAIEmbeddings(api_key=OPENAI_API_KEY)
     chroma = Chroma(persist_directory=VECTOR_DB_PATH, embedding_function=embeddings)
+
+    # 벡터 DB에 문서가 있는지 확인하고 없으면 임베딩 실행
+    if len(chroma._collection.get()["ids"]) == 0:
+        print("벡터 스토어에 데이터가 없습니다. 임베딩을 시작합니다.")
+        embed_books()
 
     # 사용자의 입력을 임베딩하고 벡터 스토어에서 최대 5개의 결과 검색
     query_embedding = embeddings.embed_query(user_input)
@@ -61,7 +65,7 @@ def chatbot_response(request):
         return Response({"response": "적합한 책을 찾지 못했습니다. 죄송합니다."})
 
     # 데이터베이스에서 책 정보 가져오기, 중복된 ID 제거
-    book_ids = list(set(int(result.metadata["id"]) for result in search_results))  # ID를 정수형으로 변환
+    book_ids = list(set(int(result.metadata["id"]) for result in search_results))
     print(f"검색된 책 ID 목록: {book_ids}")
 
     # 책 조회 시 ID를 문자열로 변환하여 쿼리 시도
