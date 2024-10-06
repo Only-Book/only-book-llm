@@ -20,19 +20,15 @@ def get_books(request):
     return Response(serializer.data)
 
 def embed_books():
-    # 데이터베이스에서 모든 책 정보 가져오기
     books = Book.objects.all()
     documents = []
 
-    # 각 책에 대해 Document 객체 생성
     for book in books:
         page_content = f"Title: {book.title}, Author: {book.author}, Description: {book.description}"
         documents.append(Document(page_content=page_content, metadata={"id": str(book.id)}))
 
-    # OpenAI를 사용하여 임베딩 생성
     embeddings = OpenAIEmbeddings(api_key=OPENAI_API_KEY)
 
-    # Chroma 벡터 스토어 초기화 및 업데이트
     chroma = Chroma(persist_directory=VECTOR_DB_PATH, embedding_function=embeddings)
     chroma.add_documents(documents)
     print(f"벡터 스토어에 임베딩된 책의 수: {len(documents)}")
@@ -42,43 +38,34 @@ def chatbot_response(request):
     user_input = request.data.get('message', '')
     print("유저의 질문: " + user_input)
 
-    # 벡터 스토어 초기화 (이미 임베딩된 데이터를 사용)
     embeddings = OpenAIEmbeddings(api_key=OPENAI_API_KEY)
     chroma = Chroma(persist_directory=VECTOR_DB_PATH, embedding_function=embeddings)
 
-    # 벡터 DB에 문서가 있는지 확인하고 없으면 임베딩 실행
     if len(chroma._collection.get()["ids"]) == 0:
         print("벡터 스토어에 데이터가 없습니다. 임베딩을 시작합니다.")
         embed_books()
 
-    # 사용자의 입력을 임베딩하고 벡터 스토어에서 최대 5개의 결과 검색
     query_embedding = embeddings.embed_query(user_input)
     search_results = chroma.similarity_search_by_vector(query_embedding, k=5)
 
-    # 유사도 검색 결과 출력
     print("유사도 검색 결과:")
     for result in search_results:
         print(f"ID: {result.metadata['id']}, Content: {result.page_content}")
 
-    # 검색 결과가 없을 경우
     if not search_results:
         return Response({"response": "적합한 책을 찾지 못했습니다. 죄송합니다."})
 
-    # 데이터베이스에서 책 정보 가져오기, 중복된 ID 제거
     book_ids = list(set(int(result.metadata["id"]) for result in search_results))
     print(f"검색된 책 ID 목록: {book_ids}")
 
-    # 책 조회 시 ID를 문자열로 변환하여 쿼리 시도
     recommended_books = Book.objects.filter(id__in=book_ids[:3])  
     print(f"조회된 책: {recommended_books}")
 
-    # 책이 조회되지 않은 경우 처리
     if not recommended_books.exists():
         return Response({"response": "적합한 책을 찾지 못했습니다. 죄송합니다."})
 
     serializer = BookSerializer(recommended_books, many=True)
 
-    # 책 정보 바탕으로 LLM에 질문 생성
     llm = ChatOpenAI(api_key=OPENAI_API_KEY)
     books_info = [
         f"Title: {book['title']}, Author: {book['author']}, Description: {book['description']}"
@@ -95,7 +82,6 @@ def chatbot_response(request):
         f"시작은 꼭 '{user_input}'라는 질문을 주셨군요! 로 시작하세요."
     )
 
-    # LLM에 질문하고 응답 받기
     llm_response = llm([HumanMessage(content=question)])
     response_message = llm_response.content
 
